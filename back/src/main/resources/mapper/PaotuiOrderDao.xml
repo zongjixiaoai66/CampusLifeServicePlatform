@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.PaotuiOrderDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.paotui_order_uuid_number as paotuiOrderUuidNumber
+        ,a.paotui_id as paotuiId
+        ,a.yonghu_id as yonghuId
+        ,a.paotui_order_true_price as paotuiOrderTruePrice
+        ,a.paotui_order_types as paotuiOrderTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.PaotuiOrderView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+        ,paotui.yonghu_id as paotuiYonghuId
+        ,paotui.paotui_name as paotuiName
+        ,paotui.paotui_uuid_number as paotuiUuidNumber
+        ,paotui.paotui_photo as paotuiPhoto
+        ,paotui.paotui_address as paotuiAddress
+        ,paotui.paotui_types as paotuiTypes
+        ,paotui.paotui_new_money as paotuiNewMoney
+        ,paotui.paotui_content as paotuiContent
+        ,paotui.shangxia_types as shangxiaTypes
+        ,paotui.paotui_delete as paotuiDelete
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.new_money as newMoney
+
+        FROM paotui_order  a
+        left JOIN paotui paotui ON a.paotui_id = paotui.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.paotuiOrderUuidNumber != '' and params.paotuiOrderUuidNumber != null and params.paotuiOrderUuidNumber != 'null' ">
+                and a.paotui_order_uuid_number like CONCAT('%',#{params.paotuiOrderUuidNumber},'%')
+            </if>
+            <if test="params.paotuiId != null and params.paotuiId != ''">
+                and (
+                    a.paotui_id = #{params.paotuiId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                    or paotui.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.paotuiOrderTruePriceStart != null ">
+                <![CDATA[  and a.paotui_order_true_price >= #{params.paotuiOrderTruePriceStart}   ]]>
+            </if>
+            <if test="params.paotuiOrderTruePriceEnd != null ">
+                <![CDATA[  and a.paotui_order_true_price <= #{params.paotuiOrderTruePriceEnd}   ]]>
+            </if>
+            <if test="params.paotuiOrderTypes != null and params.paotuiOrderTypes != ''">
+                and a.paotui_order_types = #{params.paotuiOrderTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断跑腿的id不为空 -->
+            <if test=" params.paotuiIdNotNull != '' and params.paotuiIdNotNull != null and params.paotuiIdNotNull != 'null' ">
+                and a.paotui_id IS NOT NULL
+            </if>
+            <if test=" params.paotuiName != '' and params.paotuiName != null and params.paotuiName != 'null' ">
+                and paotui.paotui_name like CONCAT('%',#{params.paotuiName},'%')
+            </if>
+            <if test=" params.paotuiUuidNumber != '' and params.paotuiUuidNumber != null and params.paotuiUuidNumber != 'null' ">
+                and paotui.paotui_uuid_number like CONCAT('%',#{params.paotuiUuidNumber},'%')
+            </if>
+            <if test=" params.paotuiAddress != '' and params.paotuiAddress != null and params.paotuiAddress != 'null' ">
+                and paotui.paotui_address like CONCAT('%',#{params.paotuiAddress},'%')
+            </if>
+            <if test="params.paotuiTypes != null  and params.paotuiTypes != ''">
+                and paotui.paotui_types = #{params.paotuiTypes}
+            </if>
+
+            <if test="params.paotuiNewMoneyStart != null ">
+                <![CDATA[  and paotui.paotui_new_money >= #{params.paotuiNewMoneyStart}   ]]>
+            </if>
+            <if test="params.paotuiNewMoneyEnd != null ">
+                <![CDATA[  and paotui.paotui_new_money <= #{params.paotuiNewMoneyEnd}   ]]>
+            </if>
+            <if test=" params.paotuiContent != '' and params.paotuiContent != null and params.paotuiContent != 'null' ">
+                and paotui.paotui_content like CONCAT('%',#{params.paotuiContent},'%')
+            </if>
+            <if test="params.shangxiaTypes != null  and params.shangxiaTypes != ''">
+                and paotui.shangxia_types = #{params.shangxiaTypes}
+            </if>
+
+            <if test="params.paotuiDeleteStart != null  and params.paotuiDeleteStart != '' ">
+                <![CDATA[  and paotui.paotui_delete >= #{params.paotuiDeleteStart}   ]]>
+            </if>
+            <if test="params.paotuiDeleteEnd != null  and params.paotuiDeleteEnd != '' ">
+                <![CDATA[  and paotui.paotui_delete <= #{params.paotuiDeleteEnd}   ]]>
+            </if>
+            <if test="params.paotuiDelete != null  and params.paotuiDelete != '' ">
+                and paotui.paotui_delete = #{params.paotuiDelete}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(paotui.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(paotui.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>

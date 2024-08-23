@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.WenyuOrderDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.wenyu_order_uuid_number as wenyuOrderUuidNumber
+        ,a.wenyu_id as wenyuId
+        ,a.yonghu_id as yonghuId
+        ,a.buy_number as buyNumber
+        ,a.wenyu_order_types as wenyuOrderTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.WenyuOrderView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+        ,wenyu.wenyu_name as wenyuName
+        ,wenyu.wenyu_uuid_number as wenyuUuidNumber
+        ,wenyu.wenyu_photo as wenyuPhoto
+        ,wenyu.wenyu_address as wenyuAddress
+        ,wenyu.wenyu_types as wenyuTypes
+        ,wenyu.wenyu_kucun_number as wenyuKucunNumber
+        ,wenyu.wenyu_content as wenyuContent
+        ,wenyu.wenyu_delete as wenyuDelete
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.new_money as newMoney
+
+        FROM wenyu_order  a
+        left JOIN wenyu wenyu ON a.wenyu_id = wenyu.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.wenyuOrderUuidNumber != '' and params.wenyuOrderUuidNumber != null and params.wenyuOrderUuidNumber != 'null' ">
+                and a.wenyu_order_uuid_number like CONCAT('%',#{params.wenyuOrderUuidNumber},'%')
+            </if>
+            <if test="params.wenyuId != null and params.wenyuId != ''">
+                and (
+                    a.wenyu_id = #{params.wenyuId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.buyNumberStart != null and params.buyNumberStart != ''">
+                <![CDATA[  and a.buy_number >= #{params.buyNumberStart}   ]]>
+            </if>
+            <if test="params.buyNumberEnd != null and params.buyNumberEnd != ''">
+                <![CDATA[  and a.buy_number <= #{params.buyNumberEnd}   ]]>
+            </if>
+             <if test="params.buyNumber != null and params.buyNumber != ''">
+                and a.buy_number = #{params.buyNumber}
+             </if>
+            <if test="params.wenyuOrderTypes != null and params.wenyuOrderTypes != ''">
+                and a.wenyu_order_types = #{params.wenyuOrderTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断文娱活动的id不为空 -->
+            <if test=" params.wenyuIdNotNull != '' and params.wenyuIdNotNull != null and params.wenyuIdNotNull != 'null' ">
+                and a.wenyu_id IS NOT NULL
+            </if>
+            <if test=" params.wenyuName != '' and params.wenyuName != null and params.wenyuName != 'null' ">
+                and wenyu.wenyu_name like CONCAT('%',#{params.wenyuName},'%')
+            </if>
+            <if test=" params.wenyuUuidNumber != '' and params.wenyuUuidNumber != null and params.wenyuUuidNumber != 'null' ">
+                and wenyu.wenyu_uuid_number like CONCAT('%',#{params.wenyuUuidNumber},'%')
+            </if>
+            <if test=" params.wenyuAddress != '' and params.wenyuAddress != null and params.wenyuAddress != 'null' ">
+                and wenyu.wenyu_address like CONCAT('%',#{params.wenyuAddress},'%')
+            </if>
+            <if test="params.wenyuTypes != null  and params.wenyuTypes != ''">
+                and wenyu.wenyu_types = #{params.wenyuTypes}
+            </if>
+
+            <if test="params.wenyuKucunNumberStart != null  and params.wenyuKucunNumberStart != '' ">
+                <![CDATA[  and wenyu.wenyu_kucun_number >= #{params.wenyuKucunNumberStart}   ]]>
+            </if>
+            <if test="params.wenyuKucunNumberEnd != null  and params.wenyuKucunNumberEnd != '' ">
+                <![CDATA[  and wenyu.wenyu_kucun_number <= #{params.wenyuKucunNumberEnd}   ]]>
+            </if>
+            <if test="params.wenyuKucunNumber != null  and params.wenyuKucunNumber != '' ">
+                and wenyu.wenyu_kucun_number = #{params.wenyuKucunNumber}
+            </if>
+            <if test=" params.wenyuContent != '' and params.wenyuContent != null and params.wenyuContent != 'null' ">
+                and wenyu.wenyu_content like CONCAT('%',#{params.wenyuContent},'%')
+            </if>
+            <if test="params.wenyuDeleteStart != null  and params.wenyuDeleteStart != '' ">
+                <![CDATA[  and wenyu.wenyu_delete >= #{params.wenyuDeleteStart}   ]]>
+            </if>
+            <if test="params.wenyuDeleteEnd != null  and params.wenyuDeleteEnd != '' ">
+                <![CDATA[  and wenyu.wenyu_delete <= #{params.wenyuDeleteEnd}   ]]>
+            </if>
+            <if test="params.wenyuDelete != null  and params.wenyuDelete != '' ">
+                and wenyu.wenyu_delete = #{params.wenyuDelete}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(wenyu.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(wenyu.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>
